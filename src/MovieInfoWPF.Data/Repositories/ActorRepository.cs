@@ -21,7 +21,7 @@ namespace MovieInfo.Data.Repositories
             {
                 await _connection.OpenAsync();
                 string query = $"insert into actors (first_name, last_name, is_male, birth_date, hobby) " +
-                    $"values ('@FirstName', '@LastName', '@Gender', '@BirthDate', '@Hobby'),";
+                    $"values(@FirstName, @LastName, @Gender, @BirthDate, @Hobby)";
                 var command = new NpgsqlCommand(query, _connection) 
                 {
                     Parameters = 
@@ -37,8 +37,9 @@ namespace MovieInfo.Data.Repositories
                 return true;
 
             }
-            catch
+            catch(Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return false;
             }
             finally 
@@ -74,7 +75,7 @@ namespace MovieInfo.Data.Repositories
             try
             {
                 await _connection.OpenAsync();
-                string query = $"selct * from actors offset {@params.SkipCount} limit {@params.PageSize}";
+                string query = $"select * from actors offset {@params.SkipCount} limit {@params.PageSize}";
                 var command = new NpgsqlCommand(query, _connection);
                 var reader = await command.ExecuteReaderAsync();
                 List<Actor> actors = new List<Actor>();
@@ -95,8 +96,9 @@ namespace MovieInfo.Data.Repositories
 
                 return actors;
             }
-            catch
+            catch(Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return new List<Actor>();
             }
             finally 
@@ -113,6 +115,7 @@ namespace MovieInfo.Data.Repositories
                 string query = $"select * from actors where id = {id}";
                 var command = new NpgsqlCommand(query, _connection);
                 var reader = await command.ExecuteReaderAsync();
+                reader.Read();
 
                 return new Actor()
                 {
@@ -126,8 +129,9 @@ namespace MovieInfo.Data.Repositories
                     UpdatedDate = reader.GetDateTime(7),
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return new Actor();
             }
             finally
@@ -142,12 +146,12 @@ namespace MovieInfo.Data.Repositories
             {
                 await _connection.OpenAsync();
                 string query = "update actors " +
-                               "set first_name = '@FirstName'," +
-                               "last_name = '@LastName'," +
+                               "set first_name = @FirstName," +
+                               "last_name = @LastName," +
                                "is_male = @Gender," +
-                               "birth_date = '@BirthDate'," +
-                               "hobby = '@Hobby'," +
-                               "updated_date = '@UpdatedDate'";
+                               "birth_date = @BirthDate," +
+                               "hobby = @Hobby," +
+                               $"updated_date = @UpdatedDate where id = {id}";
                 var command = new NpgsqlCommand(query, _connection)
                 {
                     Parameters =
@@ -157,7 +161,7 @@ namespace MovieInfo.Data.Repositories
                         new("Gender", entity.Gender),
                         new("BirthDate", entity.BirthDate),
                         new("Hobby", entity.Hobby),
-                        new("UpdatedDate", entity.UpdatedDate)
+                        new("UpdatedDate", entity.UpdatedDate = DateTime.Now)
                     }
                 };
                 await command.ExecuteNonQueryAsync();
