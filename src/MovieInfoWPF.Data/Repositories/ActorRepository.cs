@@ -54,14 +54,13 @@ namespace MovieInfo.Data.Repositories
             try
             {
                 await _connection.OpenAsync();
-                string qury = $"Delete from actors where id = {id}";
+                string qury = $"DELETE FROM actors WHERE id = {id}";
                 var command = new NpgsqlCommand(qury, _connection);
                 await command.ExecuteNonQueryAsync();
                 return true;
             }
-            catch (Exception)
+            catch
             {
-
                 return false;
             }
             finally 
@@ -75,10 +74,10 @@ namespace MovieInfo.Data.Repositories
             try
             {
                 await _connection.OpenAsync();
-                string query = $"select * from actors offset {@params.SkipCount} limit {@params.PageSize}";
+                string query = $"select * from actors order by id ASC offset {@params.SkipCount} limit {@params.PageSize}";
                 var command = new NpgsqlCommand(query, _connection);
                 var reader = await command.ExecuteReaderAsync();
-                List<Actor> actors = new List<Actor>();
+                ICollection<Actor> actors = new List<Actor>();
                 while (await reader.ReadAsync())
                 {
                     Actor actor = new Actor();
@@ -96,9 +95,8 @@ namespace MovieInfo.Data.Repositories
 
                 return actors;
             }
-            catch(Exception ex)
+            catch
             {
-                Console.WriteLine(ex.Message);
                 return new List<Actor>();
             }
             finally 
@@ -129,9 +127,8 @@ namespace MovieInfo.Data.Repositories
                     UpdatedDate = reader.GetDateTime(7),
                 };
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex.Message);
                 return new Actor();
             }
             finally
