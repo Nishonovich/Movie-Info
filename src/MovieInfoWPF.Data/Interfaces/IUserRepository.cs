@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MovieInfo.Data.Interfaces
 {
-    internal interface IUserRepository:
+    public interface IUserRepository:
          ICreateable<User>, IReadable<User>, IUpdateable<User>, IDeleteable<User>
     {
 
