@@ -38,12 +38,12 @@ namespace MovieInfo.Data.Repositories
                     }
                 };
                 await command.ExecuteNonQueryAsync();
-                return false;
+                return true;
             }
-            catch
+            catch(Exception ex)
             {
-
-                throw;
+                Console.WriteLine(ex.Message);
+                return false;
             }
             finally
             {
