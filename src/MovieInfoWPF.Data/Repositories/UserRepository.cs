@@ -3,25 +3,21 @@ using MovieInto.Domain.Configurations;
 using MovieInto.Domain.Constants;
 using MovieInto.Domain.Entities;
 using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MovieInfo.Data.Repositories
 {
     public class UserRepository : IUserRepository
     {
         private readonly NpgsqlConnection _connection = new NpgsqlConnection(DatabaseConstants.CONNECTION_STRING);
+
         public async Task<bool> CreateAsync(User entity)
         {
             try
             {
                 await _connection.OpenAsync();
-                string query = $"insert into users(first_name, last_name, is_male, " +
-                            $"birth_date, email, phone_number, login, password " +
-                            $"values(@FirstName, @LastName, @Gender, @BirthDate, @Email, @PhoneNumber, @Login, @Password)";
+                string query = $"INSERT INTO users(first_name, last_name, is_male, " +
+                               $"birth_date, email, phone_number, login, password)" +
+                               $"VALUES(@FirstName, @LastName, @Gender, @BirthDate, @Email, @PhoneNumber, @Login, @Password)";
 
                 var command = new NpgsqlCommand(query, _connection)
                 {
@@ -40,9 +36,8 @@ namespace MovieInfo.Data.Repositories
                 await command.ExecuteNonQueryAsync();
                 return true;
             }
-            catch(Exception ex)
+            catch
             {
-                Console.WriteLine(ex.Message);
                 return false;
             }
             finally
@@ -51,7 +46,7 @@ namespace MovieInfo.Data.Repositories
             }
         }
 
-        public async Task<bool> DeleteAsync(long id)
+        public async Task<bool> DeleteAsync(Int64 id)
         {
             try
             {
@@ -76,9 +71,10 @@ namespace MovieInfo.Data.Repositories
             try
             {
                 await _connection.OpenAsync();
-                string query = $"select * from users order by id asc offset {@params.SkipCount} limit {@params.PageSize}";
+                string query = $"SELECT * FROM users ORDER BY id ASC OFFSET {@params.SkipCount} LIMIT {@params.PageSize}";
                 var command = new NpgsqlCommand(query, _connection);
                 var reader = await command.ExecuteReaderAsync();
+
                 ICollection<User> users = new List<User>();
                 while (await reader.ReadAsync())
                 {
@@ -114,30 +110,32 @@ namespace MovieInfo.Data.Repositories
             }
         }
 
-        public async Task<User> ReadAsync(long id)
+        public async Task<User> ReadAsync(Int64 id)
         {
             try
             {
                 await _connection.OpenAsync();
-                string query = $"select * from users where id = {id}";
+                string query = $"SELECT * FROM users WHERE id = {id}";
                 var command = new NpgsqlCommand(query, _connection);
                 var reader = await command.ExecuteReaderAsync();
-                reader.Read();
+                await reader.ReadAsync();
 
-                return new User()
-                {
-                    Id = reader.GetInt64(0),
-                    FirstName = reader.GetString(1),
-                    LastName = reader.GetString(2),
-                    Gender = reader.GetBoolean(3),
-                    BirthDate = DateOnly.Parse($"{reader.GetDate(4)}"),
-                    Email = reader.GetString(5),
-                    PhoneNumber = reader.GetString(6),
-                    Login = reader.GetString(7),
-                    Password = reader.GetString(8),
-                    CreatedDate = reader.GetDateTime(9),
-                    UpdatedDate = reader.GetDateTime(10),
-                };
+                User user = new User();
+                user.Id = reader.GetInt64(0);
+                user.FirstName = reader.GetString(1);
+                user.LastName = reader.GetString(2);
+                user.Gender = reader.GetBoolean(3);
+                user.BirthDate = DateOnly.Parse($"{reader.GetDate(4)}");
+                user.Email = reader.GetString(5);
+                user.PhoneNumber = reader.GetString(6);
+                user.Login = reader.GetString(7);
+                user.Password = reader.GetString(8);
+                user.CreatedDate = reader.GetDateTime(9);
+
+                if (!reader.IsDBNull(10))
+                    user.UpdatedDate = reader.GetDateTime(10);
+
+                return user;
             }
             catch 
             {
@@ -149,13 +147,13 @@ namespace MovieInfo.Data.Repositories
             }
         }
 
-        public async Task<bool> UpdateAsync(long id, User entity)
+        public async Task<bool> UpdateAsync(Int64 id, User entity)
         {
             try
             {
                 await _connection.OpenAsync();
-                string query = "update users " +
-                               "set first_name = @FirstName," +
+                string query = "UPDATE users " +
+                               "SET first_name = @FirstName," +
                                "last_name = @LastName," +
                                "is_male = @Gender," +
                                "birth_date = @BirthDate," +
@@ -163,7 +161,8 @@ namespace MovieInfo.Data.Repositories
                                "phone_number = @PhoneNumber," +
                                "login = @Login," +
                                "password = @Password," +
-                               "updated_date = @UpdatedDate";
+                               "updated_date = @UpdatedDate " +
+                               $"WHERE id = {id}";
                 var command = new NpgsqlCommand(query, _connection)
                 {
                     Parameters =
