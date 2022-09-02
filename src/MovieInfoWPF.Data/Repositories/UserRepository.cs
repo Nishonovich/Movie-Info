@@ -89,12 +89,9 @@ namespace MovieInfo.Data.Repositories
                     user.Login = reader.GetString(7);
                     user.Password = reader.GetString(8);
                     user.CreatedDate = reader.GetDateTime(9);
-                    //user.UpdatedDate = reader.GetDateTime(10);
 
                     if (!reader.IsDBNull(10))
-                    {
                         user.UpdatedDate = reader.GetDateTime(10);
-                    }
                     users.Add(user);
                 }
                 return users;
