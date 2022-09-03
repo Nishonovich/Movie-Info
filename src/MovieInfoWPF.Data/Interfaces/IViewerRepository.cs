@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 
 namespace MovieInfo.Data.Interfaces
 {
-    internal interface IViewerRepository:
+    public interface IViewerRepository:
          ICreateable<Viewer>, IReadable<Viewer>, IUpdateable<Viewer>, IDeleteable<Viewer>
     {
+
     }
 }

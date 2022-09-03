@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MovieInfo.Data.Interfaces
 {
-    public interface IMovieGenres:
+    public interface IMovieGenresRepository:
          ICreateable<MovieGenres>, IReadable<MovieGenres>, IUpdateable<MovieGenres>, IDeleteable<MovieGenres>
     {
 
